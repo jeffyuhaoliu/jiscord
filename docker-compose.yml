@@ -1,0 +1,19 @@
+services:
+  scylladb:
+    image: scylladb/scylla:5.4
+    ports:
+      - "9042:9042"
+    volumes:
+      - scylla-data:/var/lib/scylla
+    command: --developer-mode=1
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  scylla-data:
+  redis-data:
