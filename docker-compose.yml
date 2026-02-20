@@ -14,6 +14,14 @@ services:
     volumes:
       - redis-data:/data
 
+  data-service:
+    build: ./services/data-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - scylladb
+      - redis
+
 volumes:
   scylla-data:
   redis-data:
