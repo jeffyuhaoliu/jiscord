@@ -18,6 +18,10 @@ services:
     build: ./services/data-service
     ports:
       - "3001:3001"
+    environment:
+      SCYLLA_CONTACT_POINTS: scylladb
+      SCYLLA_LOCAL_DC: datacenter1
+      SCYLLA_KEYSPACE: jiscord
     depends_on:
       - scylladb
       - redis

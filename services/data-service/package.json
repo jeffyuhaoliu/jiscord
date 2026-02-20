@@ -8,9 +8,11 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "cassandra-driver": "^4.8.0",
     "fastify": "^4.28.1"
   },
   "devDependencies": {
+    "@types/cassandra-driver": "^4.1.1",
     "@types/node": "^20.14.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
