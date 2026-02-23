@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-AGENT_CMD="claude" 
+AGENT_CMD="claude"
 ARCH_FILE="architecture.md"
-MAX_ITERATIONS=15      # Safeguard against infinite loops
-WAIT_ON_LIMIT=3600    # Seconds to wait if rate limited (1 hour)
+MAX_ITERATIONS=${1:-15}    # Safeguard against infinite loops (override with first arg)
+WAIT_ON_LIMIT=3600         # Seconds to wait if rate limited (1 hour)
 ITERATION_COUNT=0
 
 echo "🚀 Initializing The Guardian Loop for Discord Clone..."
@@ -19,8 +19,9 @@ fi
 while [ $ITERATION_COUNT -lt $MAX_ITERATIONS ]; do
     ((ITERATION_COUNT++))
     
-    # 2. QUERY MEMORY: Get the next ready task
-    TASK_ID=$(bd ready --json | jq -r '.[0].id // empty')
+    # 2. QUERY MEMORY: Resume in-progress tasks first, then grab next ready task
+    TASK_ID=$(bd list --status in_progress --json 2>/dev/null | jq -r '.[0].id // empty')
+    [ -z "$TASK_ID" ] && TASK_ID=$(bd ready --json | jq -r '.[0].id // empty')
 
     if [ -z "$TASK_ID" ]; then
         echo "✅ No 'ready' beads found. Project is either done or blocked. Ending loop."
@@ -73,8 +74,11 @@ EOF
     fi
 
     # 6. PERSISTENCE LAYER: Git Save Point
+    TASK_JSON=$(bd show "$TASK_ID" --json)
+    TASK_TITLE=$(echo "$TASK_JSON" | jq -r '.[0].title // empty')
+    TASK_DESC=$(echo "$TASK_JSON" | jq -r '.[0].description // empty')
     git add .
-    git commit -m "Ralph Loop [$ITERATION_COUNT]: Processed $TASK_ID"
+    git commit -m "Ralph Loop [$ITERATION_COUNT]: $TASK_TITLE" -m "$TASK_DESC"
     
     echo "🔄 Iteration $ITERATION_COUNT complete. Moving to next bead..."
     sleep 5
