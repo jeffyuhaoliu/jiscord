@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "cassandra-driver": "^4.8.0",
+    "dataloader": "^2.2.3",
     "fastify": "^4.28.1"
   },
   "devDependencies": {

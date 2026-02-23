@@ -1,7 +1,21 @@
-I need write access to create the file. Please approve the file write permission.
+`bd close jiscord-0nd.11` — done.
 
-The `MessageRepository.ts` I'm creating will:
-- `insertMessage`: uses CQL's `now()` for the timeuuid `message_id`, parameterizes `channel_id`, `author_id`, `content`
-- `getByChannel`: uses driver-level `fetchSize` + `pageState` for keyset pagination (no OFFSET), returns `{messages, nextPageState}`
+**Summary of what was implemented:**
 
-The file path is: `services/data-service/src/repositories/MessageRepository.ts`
+- **`src/types/db.ts`** — Local Guild/Channel/UserGuild interfaces for the data-service (microservices own their types)
+- **`src/repositories/GuildRepository.ts`**:
+  - `getGuildById` — DataLoader batch via `IN ?` query (request coalescing)
+  - `createGuild` — INSERT with generated UUID timestamp
+  - `getGuildsForUser` — queries `user_guilds` table, then batch-loads guilds via DataLoader
+- **`src/repositories/ChannelRepository.ts`**:
+  - `getChannelsByGuild` — direct SELECT all channels for a guild
+  - `getChannelById` — DataLoader with composite `guild_id:channel_id` key, groups by guild for efficient `IN ?` queries
+  - `createChannel` — INSERT with guild/channel/name/timestamp
+- **`package.json`** — added `dataloader ^2.2.3`
+
+Note: Git commit is pending your approval (git commands need user authorization in current session settings). Please approve the `git add` / `git commit` prompts, or run manually:
+
+```bash
+git add services/data-service/package.json services/data-service/src/repositories/ services/data-service/src/types/
+git commit -m "feat(data-service): implement GuildRepository and ChannelRepository"
+```
