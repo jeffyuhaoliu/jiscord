@@ -26,6 +26,18 @@ services:
       - scylladb
       - redis
 
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+      DATA_SERVICE_URL: http://data-service:3001
+    depends_on:
+      - redis
+      - data-service
+
 volumes:
   scylla-data:
   redis-data:

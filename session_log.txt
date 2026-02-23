@@ -1,3 +1,17 @@
-It looks like there's a pending permission prompt in the UI that needs your approval before I can write files to the new `services/frontend/` directory. Please look for a permission dialog/prompt asking if Claude can write to `/Users/jeff/projects/jiscord/services/frontend/.gitignore` and click **Allow** (or "Allow all" to approve all writes for this session).
+I need approval to run `npm install`. Please approve the following command to install gateway dependencies and verify the TypeScript compiles:
 
-Once you approve, I'll continue scaffolding the entire frontend application.
+```bash
+npm install --prefix /Users/jeff/projects/jiscord/services/gateway
+```
+
+Once you approve that, I'll run the TypeScript check and then commit all the work. All the source files are written — here's a summary of what's been implemented across all 7 tasks:
+
+| Task | Implementation |
+|------|---------------|
+| **d1h.1** | `services/gateway/` — Fastify on port 3002, `/health` pings Redis, `WebSocketServer` in `noServer` mode attached via HTTP upgrade |
+| **d1h.2** | `heartbeat.ts` — `sendHello()` sends `HELLO` with `heartbeat_interval: 30000`, monitor evicts stale sessions every 30s |
+| **d1h.3** | `handlers/identify.ts` — validates userId, evicts existing session, sends `READY` |
+| **d1h.4** | `redis.ts` — two ioredis clients (pub/sub require separate connections), `psubscribe('jiscord:channel:*')` catches all channels |
+| **d1h.5** | `handlers/sendMessage.ts` — POSTs to data-service, then publishes `MESSAGE_CREATE` event to Redis |
+| **d1h.6** | `redis.ts` `pmessage` handler — fans out to all `channelSubscribers` sessions whose WS is `OPEN` |
+| **d1h.7** | `handlers/typingStart.ts` — publishes `TYPING` event to Redis, auto-subscribes sender to channel |
