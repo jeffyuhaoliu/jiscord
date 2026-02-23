@@ -1,17 +1,22 @@
-I need approval to run `npm install`. Please approve the following command to install gateway dependencies and verify the TypeScript compiles:
+Epic `jiscord-g8z` is already closed. All done.
 
-```bash
-npm install --prefix /Users/jeff/projects/jiscord/services/gateway
-```
+---
 
-Once you approve that, I'll run the TypeScript check and then commit all the work. All the source files are written — here's a summary of what's been implemented across all 7 tasks:
+**Epic: Identity — Complete**
 
-| Task | Implementation |
-|------|---------------|
-| **d1h.1** | `services/gateway/` — Fastify on port 3002, `/health` pings Redis, `WebSocketServer` in `noServer` mode attached via HTTP upgrade |
-| **d1h.2** | `heartbeat.ts` — `sendHello()` sends `HELLO` with `heartbeat_interval: 30000`, monitor evicts stale sessions every 30s |
-| **d1h.3** | `handlers/identify.ts` — validates userId, evicts existing session, sends `READY` |
-| **d1h.4** | `redis.ts` — two ioredis clients (pub/sub require separate connections), `psubscribe('jiscord:channel:*')` catches all channels |
-| **d1h.5** | `handlers/sendMessage.ts` — POSTs to data-service, then publishes `MESSAGE_CREATE` event to Redis |
-| **d1h.6** | `redis.ts` `pmessage` handler — fans out to all `channelSubscribers` sessions whose WS is `OPEN` |
-| **d1h.7** | `handlers/typingStart.ts` — publishes `TYPING` event to Redis, auto-subscribes sender to channel |
+Here's what was implemented:
+
+**`services/auth-service/`** (port 3003, new service):
+- `GET /health` — always returns `{status: 'ok'}`
+- `POST /register` — validates username (2–32 chars), email format, password (≥8 chars); bcrypt cost=12; proxies user creation to data-service; returns `{user_id, username}`; 409 on duplicate email
+- `POST /login` — fetches user via data-service, bcrypt compare, signs HS256 JWT (7d expiry) with `{sub, username}`; returns `{token, user}`; uniform 401 on any failure (no info leak)
+- `GET /me` — fastify-jwt `preHandler` guard, returns current user from data-service
+- `POST /verify-token` — internal endpoint for Gateway to validate tokens; returns `{sub, username}` or 401
+
+**`services/data-service/`** additions:
+- `UserRepository` — DataLoader-coalesced batch fetching by user_id, email lookup via `users_by_email` table, `createUser` writes both tables
+- New routes: `POST /users`, `GET /users/:id`, `GET /users/email/:email`
+
+**`docker-compose.yml`** — auth-service added on port 3003 with `DATA_SERVICE_URL` and `JWT_SECRET` env; gateway updated with `AUTH_SERVICE_URL`
+
+Both services compile cleanly (`tsc` exit 0). Committed as `de12999`.
