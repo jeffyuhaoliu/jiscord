@@ -3,6 +3,21 @@
  * Mirrors the canonical types in src/types/db.ts at the project root.
  */
 
+/** jiscord.users - primary lookup by user_id (AP-3) */
+export interface User {
+  user_id: string;
+  username: string;
+  email: string;
+  password_hash: string;
+  created_at: Date;
+}
+
+/** jiscord.users_by_email - lookup by email, returns user_id (AP-4) */
+export interface UserByEmail {
+  email: string;
+  user_id: string;
+}
+
 /** jiscord.guilds - primary lookup by guild_id (AP-9) */
 export interface Guild {
   guild_id: string;

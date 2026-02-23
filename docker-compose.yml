@@ -26,6 +26,17 @@ services:
       - scylladb
       - redis
 
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      DATA_SERVICE_URL: http://data-service:3001
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-prod}
+    depends_on:
+      - data-service
+
   gateway:
     build: ./services/gateway
     ports:
@@ -34,9 +45,11 @@ services:
       PORT: 3002
       REDIS_URL: redis://redis:6379
       DATA_SERVICE_URL: http://data-service:3001
+      AUTH_SERVICE_URL: http://auth-service:3003
     depends_on:
       - redis
       - data-service
+      - auth-service
 
 volumes:
   scylla-data:
