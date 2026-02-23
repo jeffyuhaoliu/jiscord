@@ -20,7 +20,7 @@ while [ $ITERATION_COUNT -lt $MAX_ITERATIONS ]; do
     ((ITERATION_COUNT++))
     
     # 2. QUERY MEMORY: Get the next ready task
-    TASK_ID=$(bd ready --ids-only | head -n 1)
+    TASK_ID=$(bd ready --json | jq -r '.[0].id // empty')
 
     if [ -z "$TASK_ID" ]; then
         echo "✅ No 'ready' beads found. Project is either done or blocked. Ending loop."

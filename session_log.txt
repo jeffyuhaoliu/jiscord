@@ -1,0 +1,12 @@
+I need write permissions to create the repository files. Please approve the file write operations so I can implement the repositories.
+
+In the meantime, let me lay out what I'll create:
+- `services/data-service/src/types/db.ts` — local copy of types
+- `services/data-service/src/repositories/UserRepository.ts` — Dataloader-backed user reads
+- `services/data-service/src/repositories/MessageRepository.ts` — keyset-paginated messages
+- `services/data-service/src/repositories/GuildRepository.ts` — guild ops
+- `services/data-service/src/repositories/ChannelRepository.ts` — channel ops
+- `services/data-service/README.md` — API surface + Mermaid diagram
+- Add `dataloader` to `package.json` and install
+
+Please grant write access and I'll proceed.
