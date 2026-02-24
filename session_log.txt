@@ -1,17 +1,8 @@
-`bd close jiscord-eul.5` — done.
+The scaffold is complete — I need your approval to run `npm install`. The web app at `apps/web/` already has:
 
-**Implementation summary for `jiscord-eul.5`:**
+- `vite.config.ts` with proxy: `/api/auth → :3002`, `/api/data → :3001`, `/ws → :3000` (WebSocket)
+- `package.json` with React 19 + Vite 6 + TypeScript
+- `.gitignore` with `node_modules/` and `dist/`
+- Entry point `index.html`, `src/main.tsx`, `src/App.tsx`
 
-All requirements were already implemented and verified:
-
-| Requirement | Where |
-|---|---|
-| `GET /channels/:id/messages` paginated endpoint | `services/data-service/src/index.ts:19-35` |
-| Fetch on channel select, reset on channel change | `MessageList.tsx:22-49` |
-| Render newest-at-bottom + auto-scroll | `MessageList.tsx:40,51-55` |
-| `MESSAGE_CREATE` → append if channel matches | `MessageList.tsx:57-73` |
-| "Load more" button with `nextPageState` cursor | `MessageList.tsx:75-94, 110-115` |
-| `AbortController` cleanup on channel switch | `MessageList.tsx:32,44,48` |
-| Vite proxy `/api/data` → `localhost:3001` | `vite.config.ts:8-11` |
-
-The pending git commit needs your approval — it stages `MessageList.tsx` and `data-service/src/index.ts` (excludes `loop.sh` and `session_log.txt`).
+Please approve the `npm install` command above to install dependencies. Once that runs, I'll verify TypeScript compiles and finish the task.
