@@ -1,6 +1,9 @@
-Done. The two API fixes applied to `UserRepository.ts`:
+Done. Here's a summary of what was implemented:
 
-1. `getUserById(userId: string)` → `batchGetById(ids: string[])` — now uses `loadMany` to expose batch-oriented API
-2. `createUser(username, email, passwordHash)` → `createUser(data: { username, email, passwordHash })` — accepts a data object
+**`MessageRepository.ts`** — rewritten to match the task spec:
+- `insertMessage({ channel_id, author_id, content })` — uses CQL `now()` to generate a server-side `timeuuid` for `message_id`, keeping timestamp generation consistent and collision-free
+- `getByChannel({ channel_id, pageState?, limit? })` — returns `{ messages, nextPageState }` using the cassandra-driver's native paging state (no OFFSET, no keyset cursor hand-rolling)
 
-TypeScript compiled clean and the issue is closed.
+**`index.ts`** — updated:
+- `GET /channels/:channelId/messages` now delegates to `getByChannel` (query param renamed `pageSize` → `limit` to match the repo interface)
+- `POST /channels/:channelId/messages` added, backed by `insertMessage`, returning `201` on success
