@@ -1,8 +1,3 @@
-Comment logged. Exiting per Rule 4.
+**BLOCKED**: `jiscord-d1h.8` (Self-review + architecture verification: Gateway) is still OPEN.
 
-**Summary:**
-- `bd start jiscord-eul.1` — FAILED (`start` command does not exist)
-- `bd note jiscord-eul.1` — FAILED (`note` command does not exist)
-- Logged stuck state via `bd comments add jiscord-eul.1` (Rule 3 equivalent)
-
-**Status:** Task `jiscord-eul.1` scaffold is already complete (committed at `0df437c`). Blocked from closing by open dependency `jiscord-d1h.8` (Gateway self-review). No action possible until that dependency resolves.
+The `apps/web/` scaffold is already complete and committed. This task cannot be closed until `jiscord-d1h.8` is resolved. Exiting.

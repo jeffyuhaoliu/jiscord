@@ -16,17 +16,50 @@ if [ ! -f "$ARCH_FILE" ]; then
     exit 1
 fi
 
+LAST_TASK_ID=""
+STUCK_COUNT=0
+MAX_STUCK=2  # Stop if the same task is picked up this many times in a row
+
 while [ $ITERATION_COUNT -lt $MAX_ITERATIONS ]; do
     ((ITERATION_COUNT++))
-    
-    # 2. QUERY MEMORY: Resume in-progress tasks first (most recently updated), then grab next ready task
-    TASK_ID=$(bd list --status in_progress --json 2>/dev/null | jq -r 'sort_by(.updated_at) | reverse | .[0].id // empty')
+
+    # 2. QUERY MEMORY: Resume in-progress tasks first, but skip blocked ones
+    # A task is "blocked" if any of its dependencies are still open/in_progress
+    TASK_ID=""
+    while IFS= read -r candidate; do
+        [ -z "$candidate" ] && continue
+        # Check if this candidate has unresolved blocking dependencies
+        BLOCKED=$(bd show "$candidate" --json 2>/dev/null | jq -r '
+            .dependencies // [] |
+            map(select(.type == "blocks")) |
+            length > 0
+        ')
+        if [ "$BLOCKED" = "false" ] || [ -z "$BLOCKED" ]; then
+            TASK_ID="$candidate"
+            break
+        fi
+        echo "⏭️  Skipping $candidate (has unresolved dependencies)"
+    done < <(bd list --status in_progress --json 2>/dev/null | jq -r 'sort_by(.updated_at) | reverse | .[].id // empty')
+
     [ -z "$TASK_ID" ] && TASK_ID=$(bd ready --json | jq -r '.[0].id // empty')
 
     if [ -z "$TASK_ID" ]; then
         echo "✅ No 'ready' beads found. Project is either done or blocked. Ending loop."
         break
     fi
+
+    # Stuck detection: same task picked up too many times in a row
+    if [ "$TASK_ID" = "$LAST_TASK_ID" ]; then
+        ((STUCK_COUNT++))
+        if [ $STUCK_COUNT -ge $MAX_STUCK ]; then
+            echo "🔁 STUCK: '$TASK_ID' selected $STUCK_COUNT times in a row without closing. Stopping loop."
+            echo "Manually resolve or close this task, then re-run."
+            exit 1
+        fi
+    else
+        STUCK_COUNT=0
+    fi
+    LAST_TASK_ID="$TASK_ID"
 
     echo "----------------------------------------------------"
     echo "📍 Iteration: $ITERATION_COUNT / $MAX_ITERATIONS"
@@ -48,11 +81,17 @@ $ARCH_CONTEXT
 # TASK CONTEXT
 $TASK_CONTEXT
 
+# BEADS WORKFLOW COMMANDS (use exactly these)
+- Mark in-progress : bd update $TASK_ID --status in_progress
+- Close when done  : bd close $TASK_ID
+- Add a note       : bd comment $TASK_ID "your message"
+
 # RULES
-1. Run 'bd start $TASK_ID'.
-2. If success: 'bd finish $TASK_ID'. 
-3. If failure/stuck: 'bd note $TASK_ID' with detailed logs.
-4. Exit immediately after the Beads command.
+1. If not already in_progress, run: bd update $TASK_ID --status in_progress
+2. Implement the task according to the description and acceptance criteria.
+3. When complete, run: bd close $TASK_ID
+4. If blocked by an unresolved dependency, run: bd comment $TASK_ID "BLOCKED: <reason>" and exit. Do NOT loop or retry.
+5. Exit immediately after completing step 3 or 4.
 EOF
 
     # Capture the exit status
