@@ -1,9 +1,13 @@
-Task `jiscord-d1h.1` is closed. The gateway service at `services/gateway/` was already fully scaffolded with:
+Epic **jiscord-d1h: Gateway** is fully closed. Here's what was verified and completed:
 
-- `Fastify` + `ws` + `ioredis` on port 3002
-- `GET /health` → `{status:'ok', connections: N}` (returns 200)
-- WebSocket upgrade on the same HTTP server port
-- Redis pub/sub with separate publisher/subscriber clients
-- Heartbeat monitor with HELLO + HEARTBEAT_ACK protocol
-- docker-compose entry already configured
-- `.gitignore`, `Dockerfile`, `tsconfig.json` all present and committed
+**Implementation (already committed across `7f106ea` + `a344967`):**
+- `src/protocol.ts` — OpCode enum + typed payload interfaces
+- `src/state.ts` — `clients`, `userSessions`, `channelSubscribers` Maps with clean teardown
+- `src/heartbeat.ts` — HELLO on connect, HEARTBEAT→ACK, timeout monitor
+- `src/handlers/identify.ts` — userId validation, single-session eviction, READY response
+- `src/redis.ts` — psubscribe `jiscord:channel:*`, Redis→WS fan-out
+- `src/handlers/sendMessage.ts` — auth guard, persist via data-service, Redis publish
+- `src/handlers/typingStart.ts` — auth guard, Redis TYPING publish
+- `src/index.ts` — Fastify + ws upgrade, full message dispatch switch
+
+**Architecture compliance:** TypeScript/Node.js ✓ · Redis Pub/Sub ✓ · data-service for ScyllaDB ✓ · docker-compose wired on port 3002 ✓
