@@ -1,13 +1,11 @@
-Epic **jiscord-d1h: Gateway** is fully closed. Here's what was verified and completed:
+I've hit a blocking situation. Here's the summary:
 
-**Implementation (already committed across `7f106ea` + `a344967`):**
-- `src/protocol.ts` — OpCode enum + typed payload interfaces
-- `src/state.ts` — `clients`, `userSessions`, `channelSubscribers` Maps with clean teardown
-- `src/heartbeat.ts` — HELLO on connect, HEARTBEAT→ACK, timeout monitor
-- `src/handlers/identify.ts` — userId validation, single-session eviction, READY response
-- `src/redis.ts` — psubscribe `jiscord:channel:*`, Redis→WS fan-out
-- `src/handlers/sendMessage.ts` — auth guard, persist via data-service, Redis publish
-- `src/handlers/typingStart.ts` — auth guard, Redis TYPING publish
-- `src/index.ts` — Fastify + ws upgrade, full message dispatch switch
+**What exists:** `UserRepository.ts` has the correct DataLoader architecture — batches `SELECT ... WHERE user_id IN ?`, `getUserByEmail` routes through the loader (satisfies "DataLoader is the ONLY path"), and `createUser` does dual-write to `users` + `users_by_email`.
 
-**Architecture compliance:** TypeScript/Node.js ✓ · Redis Pub/Sub ✓ · data-service for ScyllaDB ✓ · docker-compose wired on port 3002 ✓
+**What's missing (API spec gaps):**
+1. `getUserById(userId: string)` should be `batchGetById(ids: string[])` using `loadMany`
+2. `createUser(username, email, passwordHash)` should be `createUser(data: { username, email, password_hash })`
+
+**Why blocked:** All 5 attempts to edit `UserRepository.ts` were denied by the permission system.
+
+To unblock: please grant write permission to `services/data-service/src/repositories/UserRepository.ts` and I'll make the two targeted API changes.
