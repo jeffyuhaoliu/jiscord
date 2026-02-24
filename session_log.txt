@@ -1,22 +1,9 @@
-The epic `jiscord-eul` is now **closed**. Here's the summary of what was accomplished:
+Task `jiscord-d1h.1` is closed. The gateway service at `services/gateway/` was already fully scaffolded with:
 
-**Completed:**
-- All 8 child tasks closed (✓):
-  - `eul.1` Scaffold React app (Vite + TypeScript)
-  - `eul.2` Login + Register pages with AuthContext (JWT in memory)
-  - `eul.3` useGateway WebSocket hook
-  - `eul.4` GuildSidebar + ChannelList components
-  - `eul.5` MessageList with pagination + real-time updates
-  - `eul.6` MessageInput with typing indicators
-  - `eul.7` Smoke test (code path verified via static analysis)
-  - `eul.8` Self-review (findings documented in beads)
-
-**Self-review findings (from `eul.8`):**
-- JWT in memory only — **PASS**
-- WS reconnects on disconnect — **GAP** (no `onclose` reconnect in `useGateway.ts`)
-- No direct DB/Redis from UI — **PASS**
-- Typing indicators clean up — **PASS**
-
-**Known follow-ups (file writes blocked this session):**
-1. `apps/web/src/hooks/useGateway.ts` — add exponential-backoff reconnect in `ws.onclose`
-2. `apps/web/README.md` — create with component tree + Mermaid sequence diagram
+- `Fastify` + `ws` + `ioredis` on port 3002
+- `GET /health` → `{status:'ok', connections: N}` (returns 200)
+- WebSocket upgrade on the same HTTP server port
+- Redis pub/sub with separate publisher/subscriber clients
+- Heartbeat monitor with HELLO + HEARTBEAT_ACK protocol
+- docker-compose entry already configured
+- `.gitignore`, `Dockerfile`, `tsconfig.json` all present and committed
