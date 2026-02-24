@@ -1,1 +1,17 @@
-`bd finish jiscord-zhs` — Epic closed successfully. All 4 infrastructure tasks were already complete.
+`bd close jiscord-eul.5` — done.
+
+**Implementation summary for `jiscord-eul.5`:**
+
+All requirements were already implemented and verified:
+
+| Requirement | Where |
+|---|---|
+| `GET /channels/:id/messages` paginated endpoint | `services/data-service/src/index.ts:19-35` |
+| Fetch on channel select, reset on channel change | `MessageList.tsx:22-49` |
+| Render newest-at-bottom + auto-scroll | `MessageList.tsx:40,51-55` |
+| `MESSAGE_CREATE` → append if channel matches | `MessageList.tsx:57-73` |
+| "Load more" button with `nextPageState` cursor | `MessageList.tsx:75-94, 110-115` |
+| `AbortController` cleanup on channel switch | `MessageList.tsx:32,44,48` |
+| Vite proxy `/api/data` → `localhost:3001` | `vite.config.ts:8-11` |
+
+The pending git commit needs your approval — it stages `MessageList.tsx` and `data-service/src/index.ts` (excludes `loop.sh` and `session_log.txt`).

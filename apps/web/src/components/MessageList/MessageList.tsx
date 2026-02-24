@@ -20,7 +20,7 @@ export function MessageList({ channelId, on }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (\!channelId) {
+    if (!channelId) {
       setMessages([]);
       setNextPageState(null);
       return;
@@ -29,10 +29,11 @@ export function MessageList({ channelId, on }: Props) {
     setMessages([]);
     setNextPageState(null);
 
+    const controller = new AbortController();
     const baseUrl = "/api/data/channels/" + channelId + "/messages?pageSize=" + String(PAGE_SIZE);
-    fetch(baseUrl)
+    fetch(baseUrl, { signal: controller.signal })
       .then((res) => {
-        if (\!res.ok) throw new Error("HTTP " + String(res.status));
+        if (!res.ok) throw new Error("HTTP " + String(res.status));
         return res.json() as Promise<MessagesResponse>;
       })
       .then(({ messages: msgs, nextPageState: nps }) => {
@@ -40,20 +41,22 @@ export function MessageList({ channelId, on }: Props) {
         setNextPageState(nps);
       })
       .catch((err: unknown) => {
+        if (err instanceof Error && err.name === "AbortError") return;
         console.error("[MessageList] fetch error", err);
       })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [channelId]);
 
   useEffect(() => {
-    if (\!loading) {
+    if (!loading) {
       bottomRef.current?.scrollIntoView({ behavior: "instant" });
     }
   }, [loading]);
 
   useEffect(() => {
     const off = on("MESSAGE_CREATE", (payload) => {
-      if (payload.channelId \!== channelId) return;
+      if (payload.channelId !== channelId) return;
       const newMsg: Message = {
         message_id: payload.messageId,
         channel_id: payload.channelId,

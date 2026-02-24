@@ -19,8 +19,8 @@ fi
 while [ $ITERATION_COUNT -lt $MAX_ITERATIONS ]; do
     ((ITERATION_COUNT++))
     
-    # 2. QUERY MEMORY: Resume in-progress tasks first, then grab next ready task
-    TASK_ID=$(bd list --status in_progress --json 2>/dev/null | jq -r '.[0].id // empty')
+    # 2. QUERY MEMORY: Resume in-progress tasks first (most recently updated), then grab next ready task
+    TASK_ID=$(bd list --status in_progress --json 2>/dev/null | jq -r 'sort_by(.updated_at) | reverse | .[0].id // empty')
     [ -z "$TASK_ID" ] && TASK_ID=$(bd ready --json | jq -r '.[0].id // empty')
 
     if [ -z "$TASK_ID" ]; then
@@ -60,7 +60,7 @@ EOF
 
     # 5. ERROR & TOKEN HANDLING
     if [ $EXIT_STATUS -ne 0 ]; then
-        if grep -qiE "limit reached|rate limit|insufficient quota" session_log.txt; then
+        if grep -qiE "limit reached|rate limit|insufficient quota|you've hit your limit|hit your limit|resets [0-9]" session_log.txt; then
             echo "🛑 TOKEN LIMIT REACHED. Cooling down for $((WAIT_ON_LIMIT / 60)) minutes..."
             sleep $WAIT_ON_LIMIT
             # Decrement count so this 'failed' attempt doesn't count toward MAX_ITERATIONS
