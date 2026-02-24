@@ -29,8 +29,8 @@ export class UserRepository {
     );
   }
 
-  async getUserById(userId: string): Promise<User | null> {
-    return this.userLoader.load(userId);
+  async batchGetById(ids: string[]): Promise<(User | null)[]> {
+    return this.userLoader.loadMany(ids) as Promise<(User | null)[]>;
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -41,7 +41,8 @@ export class UserRepository {
     return this.userLoader.load(userId);
   }
 
-  async createUser(username: string, email: string, passwordHash: string): Promise<User> {
+  async createUser(data: { username: string; email: string; passwordHash: string }): Promise<User> {
+    const { username, email, passwordHash } = data;
     const userId = randomUUID();
     const createdAt = new Date();
 
