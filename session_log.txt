@@ -1,7 +1,7 @@
-`bd start` and `bd finish` commands do not exist in this version of `bd`. Per rule 3 (failure/stuck), I logged the situation via `bd comments add jiscord-eul.1` with detailed context:
+Logged the failure. Summary:
 
-- `bd start` → unknown command
-- `bd finish` → unknown command  
-- `bd note` → unknown command
-- Scaffold is already complete and committed (`0df437c`)
-- Task remains blocked by open dependency `jiscord-d1h.8` (Gateway self-review)
+- `bd start jiscord-eul.1` — **failed**: command does not exist in this `bd` version
+- `bd note jiscord-eul.1` — **failed**: command does not exist
+- `bd comments add jiscord-eul.1` — **succeeded**: detailed failure log recorded
+
+The scaffold for jiscord-eul.1 is already complete and committed (`0df437c`). The task remains blocked by open dependency `jiscord-d1h.8` (Gateway self-review), which must be resolved before this issue can be closed.
