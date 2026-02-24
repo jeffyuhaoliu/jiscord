@@ -1,17 +1,7 @@
 import { client } from '../db/client';
+import { MessageRow, MessagesPage } from '../types/db';
 
-export interface MessageRow {
-  message_id: string;
-  channel_id: string;
-  author_id: string;
-  content: string;
-  created_at: string;
-}
-
-export interface MessagesPage {
-  messages: MessageRow[];
-  nextPageState: string | null;
-}
+export type { MessageRow, MessagesPage };
 
 export class MessageRepository {
   async insertMessage(data: {

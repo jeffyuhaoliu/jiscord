@@ -33,8 +33,29 @@ export interface Channel {
   created_at: Date;
 }
 
+/** jiscord.guild_members - list members of a guild (AP-8, AP-10) */
+export interface GuildMember {
+  guild_id: string;
+  user_id: string;
+  joined_at: Date;
+}
+
 /** jiscord.user_guilds - list guilds a user belongs to (AP-7) */
 export interface UserGuild {
   user_id: string;
   guild_id: string;
+}
+
+/** API shape for a message: created_at is derived from the timeuuid message_id */
+export interface MessageRow {
+  message_id: string;
+  channel_id: string;
+  author_id: string;
+  content: string;
+  created_at: string; // ISO string extracted from timeuuid
+}
+
+export interface MessagesPage {
+  messages: MessageRow[];
+  nextPageState: string | null;
 }
