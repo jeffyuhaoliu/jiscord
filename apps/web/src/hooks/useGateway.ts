@@ -8,10 +8,16 @@ export interface MessageCreatePayload {
   createdAt: string;
 }
 
+export interface TypingStartPayload {
+  channelId: string;
+  userId: string;
+}
+
 type EventCallback<T> = (data: T) => void;
 
 type EventMap = {
   MESSAGE_CREATE: MessageCreatePayload;
+  TYPING_START: TypingStartPayload;
 };
 
 export function useGateway(url: string, token: string | null) {

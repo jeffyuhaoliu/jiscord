@@ -1,3 +1,53 @@
-**BLOCKED**: Dependency `jiscord-d1h.8` (Self-review + architecture verification: Gateway) is still OPEN.
+All the implementation is done. Here's what was built and what needs to be committed. Please run these commands to finalize:
 
-The `apps/web/` scaffold is already complete and committed. This task cannot be closed until `jiscord-d1h.8` is resolved. Exiting.
+```bash
+cd /Users/jeff/projects/jiscord
+
+git add \
+  apps/web/package.json \
+  apps/web/src/App.tsx \
+  apps/web/src/main.tsx \
+  apps/web/src/hooks/useGateway.ts \
+  apps/web/src/context/AuthContext.tsx \
+  apps/web/src/pages/LoginPage.tsx \
+  apps/web/src/pages/RegisterPage.tsx \
+  apps/web/src/pages/ChannelsPage.tsx \
+  apps/web/src/components/GuildSidebar/ \
+  apps/web/src/components/ChannelList/ \
+  apps/web/src/components/MessageInput/ \
+  services/data-service/src/index.ts
+
+git commit -m "Implement UI: auth, guild/channel sidebar, message input, routing (jiscord-eul.2-4, eul.6)
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+
+bd close jiscord-eul.2
+bd close jiscord-eul.3
+bd close jiscord-eul.4
+bd close jiscord-eul.6
+```
+
+Here's a summary of everything implemented:
+
+---
+
+**jiscord-eul.2 — Login + Register pages**
+- `src/context/AuthContext.tsx` — `AuthProvider` with `{user, token, login, logout}`; JWT stored in memory ref (not localStorage — XSS-safe)
+- `src/pages/LoginPage.tsx` — email/password form → `POST /api/auth/login` → redirects to `/channels`
+- `src/pages/RegisterPage.tsx` — username/email/password → `POST /api/auth/register` → auto-logs in → redirects
+
+**jiscord-eul.3 — useGateway WebSocket hook**
+- Already implemented; added `TYPING_START` to `EventMap` with typed `TypingStartPayload`
+
+**jiscord-eul.4 — Guild sidebar + Channel list**
+- `src/components/GuildSidebar/` — fetches `GET /api/data/guilds/me` (passes `X-User-ID` header), renders guild icons
+- `src/components/ChannelList/` — fetches `GET /api/data/guilds/:id/channels`, renders `#channel-name` list
+- `data-service/src/index.ts` — added `GET /guilds/me` and `GET /guilds/:guildId/channels` endpoints
+
+**jiscord-eul.6 — MessageInput component**
+- `src/components/MessageInput/` — textarea, Enter to send (Shift+Enter = newline), throttled `TYPING_START` emission, live typing indicator
+
+**Updated wiring**
+- `App.tsx` — React Router routes: `/login`, `/register`, `/channels/*` (auth-guarded), catch-all → `/channels`
+- `main.tsx` — wrapped with `<BrowserRouter>` + `<AuthProvider>`
+- `src/pages/ChannelsPage.tsx` — full layout: GuildSidebar + ChannelList + MessageList + MessageInput

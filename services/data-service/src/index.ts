@@ -1,9 +1,13 @@
 import Fastify from "fastify";
 import { client, connect } from "./db/client";
 import { MessageRepository } from "./repositories/MessageRepository";
+import { GuildRepository } from "./repositories/GuildRepository";
+import { ChannelRepository } from "./repositories/ChannelRepository";
 
 const server = Fastify({ logger: true });
 const messageRepo = new MessageRepository();
+const guildRepo = new GuildRepository();
+const channelRepo = new ChannelRepository();
 
 server.get("/health", async (_req, reply) => {
   const state = client.getState();
@@ -33,6 +37,43 @@ server.get<{ Params: GetMessagesParams, Querystring: GetMessagesQuery }>(
     }
   }
 )
+
+// GET /guilds/me — fetch guilds for authenticated user (user_id via X-User-ID header)
+server.get("/guilds/me", async (req, reply) => {
+  const userId = (req.headers["x-user-id"] as string | undefined)?.trim();
+  if (!userId) {
+    return reply.status(400).send({ error: "X-User-ID header required" });
+  }
+  try {
+    const guilds = await guildRepo.getGuildsForUser(userId);
+    return guilds.map((g) => ({
+      guild_id: g.guild_id,
+      name: g.name,
+      created_at: g.created_at,
+    }));
+  } catch (err) {
+    server.log.error(err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// GET /guilds/:guildId/channels — list channels for a guild
+interface GetChannelsParams { guildId: string }
+server.get<{ Params: GetChannelsParams }>("/guilds/:guildId/channels", async (req, reply) => {
+  const { guildId } = req.params;
+  try {
+    const channels = await channelRepo.getChannelsByGuild(guildId);
+    return channels.map((c) => ({
+      channel_id: c.channel_id,
+      guild_id: c.guild_id,
+      name: c.name,
+      created_at: c.created_at,
+    }));
+  } catch (err) {
+    server.log.error(err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
 
 const start = async () => {
   try {

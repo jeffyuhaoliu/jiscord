@@ -31,7 +31,7 @@ while [ $ITERATION_COUNT -lt $MAX_ITERATIONS ]; do
         # Check if this candidate has unresolved blocking dependencies
         BLOCKED=$(bd show "$candidate" --json 2>/dev/null | jq -r '
             (.[0].dependencies // []) |
-            map(select(.type == "blocks")) |
+            map(select(.dependency_type == "blocks" and .status != "closed")) |
             length > 0
         ')
         if [ "$BLOCKED" = "false" ] || [ -z "$BLOCKED" ]; then
