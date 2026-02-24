@@ -1,9 +1,17 @@
-Done. Here's a summary of what was implemented:
+Done. Here's the review summary:
 
-**`MessageRepository.ts`** — rewritten to match the task spec:
-- `insertMessage({ channel_id, author_id, content })` — uses CQL `now()` to generate a server-side `timeuuid` for `message_id`, keeping timestamp generation consistent and collision-free
-- `getByChannel({ channel_id, pageState?, limit? })` — returns `{ messages, nextPageState }` using the cassandra-driver's native paging state (no OFFSET, no keyset cursor hand-rolling)
+**Verification results (jiscord-0nd.12):**
 
-**`index.ts`** — updated:
-- `GET /channels/:channelId/messages` now delegates to `getByChannel` (query param renamed `pageSize` → `limit` to match the repo interface)
-- `POST /channels/:channelId/messages` added, backed by `insertMessage`, returning `201` on success
+| Check | Result |
+|-------|--------|
+| No N+1 reads | ✅ All multi-entity lookups go through DataLoader `loadMany()` or single-partition range scans |
+| TS interfaces match schema | ✅ Fixed — added missing `GuildMember`, moved `MessageRow`/`MessagesPage` to `types/db.ts` |
+| `/health` checks DB liveness | ✅ `getConnectedHosts().length > 0` → returns 503 on disconnect |
+| README with API surface + Mermaid | ✅ Created `services/data-service/README.md` |
+
+**Fixes applied:**
+- `services/data-service/src/types/db.ts`: added `GuildMember`, `MessageRow`, `MessagesPage`
+- `MessageRepository.ts`: imports types from shared module instead of defining locally (re-exports for consumers)
+- `services/data-service/README.md`: full API table + 3 Mermaid diagrams covering each Dataloader pattern and message pagination
+
+Both `jiscord-0nd.12` and the parent epic `jiscord-0nd` are now closed.
