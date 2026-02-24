@@ -19,24 +19,44 @@ server.get("/health", async (_req, reply) => {
 });
 
 interface GetMessagesParams { channelId: string }
-interface GetMessagesQuery { pageSize?: string; pageState?: string }
+interface GetMessagesQuery { limit?: string; pageState?: string }
 server.get<{ Params: GetMessagesParams, Querystring: GetMessagesQuery }>(
   "/channels/:channelId/messages",
   async (req, reply) => {
-    const { channelId } = req.params
-    const rawSize = req.query.pageSize
-    const parsedSize = parseInt(rawSize ?? "50", 10)
-    const pageSize = Math.min(isNaN(parsedSize) ? 50 : parsedSize, 100)
-    const pageState = req.query.pageState
+    const { channelId } = req.params;
+    const rawLimit = req.query.limit;
+    const parsedLimit = parseInt(rawLimit ?? "50", 10);
+    const limit = isNaN(parsedLimit) ? 50 : parsedLimit;
+    const pageState = req.query.pageState;
     try {
-      const result = await messageRepo.getMessages(channelId, pageSize, pageState)
-      return result
+      const result = await messageRepo.getByChannel({ channel_id: channelId, pageState, limit });
+      return result;
     } catch (err) {
-      server.log.error(err)
-      return reply.status(500).send({ error: "Internal server error" })
+      server.log.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
     }
   }
-)
+);
+
+interface PostMessageParams { channelId: string }
+interface PostMessageBody { author_id: string; content: string }
+server.post<{ Params: PostMessageParams; Body: PostMessageBody }>(
+  "/channels/:channelId/messages",
+  async (req, reply) => {
+    const { channelId } = req.params;
+    const { author_id, content } = req.body;
+    if (!author_id || !content) {
+      return reply.status(400).send({ error: "author_id and content are required" });
+    }
+    try {
+      await messageRepo.insertMessage({ channel_id: channelId, author_id, content });
+      return reply.status(201).send({ ok: true });
+    } catch (err) {
+      server.log.error(err);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  }
+);
 
 // GET /guilds/me — fetch guilds for authenticated user (user_id via X-User-ID header)
 server.get("/guilds/me", async (req, reply) => {
