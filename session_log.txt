@@ -1,7 +1,8 @@
-Comment logged. The task is stuck due to:
+Comment logged. Exiting per Rule 4.
 
-1. `bd start`, `bd finish`, and `bd note` do not exist in this version of `bd`
-2. The scaffold (apps/web/) is already complete and committed (`0df437c`)
-3. `bd close` is blocked by open dependency **jiscord-d1h.8** (Gateway self-review)
+**Summary:**
+- `bd start jiscord-eul.1` — FAILED (`start` command does not exist)
+- `bd note jiscord-eul.1` — FAILED (`note` command does not exist)
+- Logged stuck state via `bd comments add jiscord-eul.1` (Rule 3 equivalent)
 
-**Status**: No action possible until `jiscord-d1h.8` is resolved. Comment added to `jiscord-eul.1` documenting the situation.
+**Status:** Task `jiscord-eul.1` scaffold is already complete (committed at `0df437c`). Blocked from closing by open dependency `jiscord-d1h.8` (Gateway self-review). No action possible until that dependency resolves.
