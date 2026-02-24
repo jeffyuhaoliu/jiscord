@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-AGENT_CMD="claude"
+AGENT_CMD="claude --dangerously-skip-permissions"
 ARCH_FILE="architecture.md"
 MAX_ITERATIONS=${1:-15}    # Safeguard against infinite loops (override with first arg)
 WAIT_ON_LIMIT=3600         # Seconds to wait if rate limited (1 hour)

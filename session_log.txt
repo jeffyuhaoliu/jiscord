@@ -1,8 +1,6 @@
-It seems write permissions may be restricted. Please grant permission for this edit — I need to modify `UserRepository.ts` to rename `getUserById` to `batchGetById(ids: string[])` and update `createUser` to accept a data object. These are the exact fixes described in the blocked comments.
+Done. The two API fixes applied to `UserRepository.ts`:
 
-Once you grant permission, here's what I'll do:
+1. `getUserById(userId: string)` → `batchGetById(ids: string[])` — now uses `loadMany` to expose batch-oriented API
+2. `createUser(username, email, passwordHash)` → `createUser(data: { username, email, passwordHash })` — accepts a data object
 
-1. **`getUserById(userId: string)`** → **`batchGetById(ids: string[])`** — calls `userLoader.loadMany(ids)` instead of `load`
-2. **`createUser(username, email, passwordHash)`** → **`createUser(data: { username, email, passwordHash })`** — accepts a single object
-
-Would you like to approve the edit?
+TypeScript compiled clean and the issue is closed.
