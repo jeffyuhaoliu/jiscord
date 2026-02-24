@@ -1,7 +1,7 @@
-Logged the failure. Summary:
+Comment logged. The task is stuck due to:
 
-- `bd start jiscord-eul.1` — **failed**: command does not exist in this `bd` version
-- `bd note jiscord-eul.1` — **failed**: command does not exist
-- `bd comments add jiscord-eul.1` — **succeeded**: detailed failure log recorded
+1. `bd start`, `bd finish`, and `bd note` do not exist in this version of `bd`
+2. The scaffold (apps/web/) is already complete and committed (`0df437c`)
+3. `bd close` is blocked by open dependency **jiscord-d1h.8** (Gateway self-review)
 
-The scaffold for jiscord-eul.1 is already complete and committed (`0df437c`). The task remains blocked by open dependency `jiscord-d1h.8` (Gateway self-review), which must be resolved before this issue can be closed.
+**Status**: No action possible until `jiscord-d1h.8` is resolved. Comment added to `jiscord-eul.1` documenting the situation.
