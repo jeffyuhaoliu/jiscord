@@ -1,1 +1,7 @@
-`bd close` is blocked by the open dependency `jiscord-d1h.8` (Gateway self-review). The scaffold itself is verified complete — `vite.config.ts` has the correct proxies (`/api/auth → 3002`, `/api/data → 3001`), and all source files are in place. Added a comment to `jiscord-eul.1` documenting this status. The task will be closeable once `jiscord-d1h.8` is resolved.
+Note added to `jiscord-eul.1`. The task is **stuck/blocked**:
+
+- `bd start` is not a valid command (no such subcommand in this bd version)
+- Scaffold is already complete and committed (`0df437c`) — all required files exist in `apps/web/`
+- `bd close` is blocked by open dependency `jiscord-d1h.8` (Gateway self-review)
+
+**Next action**: Resolve `jiscord-d1h.8` first, then this task can be closed.
