@@ -1,31 +1,8 @@
-The task is blocked by the permission system. Here's a summary of what needs to be done manually to `services/data-service/src/repositories/UserRepository.ts`:
+It seems write permissions may be restricted. Please grant permission for this edit — I need to modify `UserRepository.ts` to rename `getUserById` to `batchGetById(ids: string[])` and update `createUser` to accept a data object. These are the exact fixes described in the blocked comments.
 
-**Change 1 — Replace `getUserById` with `batchGetById`:**
+Once you grant permission, here's what I'll do:
 
-```ts
-// REMOVE:
-async getUserById(userId: string): Promise<User | null> {
-  return this.userLoader.load(userId);
-}
+1. **`getUserById(userId: string)`** → **`batchGetById(ids: string[])`** — calls `userLoader.loadMany(ids)` instead of `load`
+2. **`createUser(username, email, passwordHash)`** → **`createUser(data: { username, email, passwordHash })`** — accepts a single object
 
-// ADD:
-async batchGetById(ids: string[]): Promise<(User | null)[]> {
-  return this.userLoader.loadMany(ids).then((results) =>
-    results.map((r) => (r instanceof Error ? null : r)),
-  );
-}
-```
-
-**Change 2 — Switch `createUser` to a data object:**
-
-```ts
-// CHANGE signature from:
-async createUser(username: string, email: string, passwordHash: string): Promise<User>
-
-// TO:
-async createUser(data: { username: string; email: string; password_hash: string }): Promise<User>
-// then destructure: const { username, email, password_hash } = data;
-// and update all references to passwordHash → password_hash
-```
-
-The DataLoader batching logic and `getUserByEmail` are already correct and don't need changes. Once you approve write permissions or make these edits manually, the task can be closed.
+Would you like to approve the edit?
