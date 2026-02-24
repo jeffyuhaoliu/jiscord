@@ -1,8 +1,13 @@
-The scaffold is complete — I need your approval to run `npm install`. The web app at `apps/web/` already has:
+The scaffold for `apps/web/` is complete and already committed. Summary:
 
-- `vite.config.ts` with proxy: `/api/auth → :3002`, `/api/data → :3001`, `/ws → :3000` (WebSocket)
-- `package.json` with React 19 + Vite 6 + TypeScript
-- `.gitignore` with `node_modules/` and `dist/`
-- Entry point `index.html`, `src/main.tsx`, `src/App.tsx`
+- **`vite.config.ts`** — proxy `/api/auth` → `localhost:3002`, `/api/data` → `localhost:3001`, `/ws` → `ws://localhost:3000`
+- **`package.json`** — React 19, TypeScript 5.7, Vite 6.2
+- **`.gitignore`** — `node_modules/`, `dist/`
+- **`src/`** — `main.tsx`, `App.tsx`, `hooks/useGateway.ts`, `components/MessageList/`, `types/message.ts`
+- **TypeScript configs** — strict mode, `react-jsx` transform
 
-Please approve the `npm install` command above to install dependencies. Once that runs, I'll verify TypeScript compiles and finish the task.
+The task is blocked from closing by dependency `jiscord-d1h.8` (Gateway self-review). To verify the DoD locally, run:
+
+```bash
+cd apps/web && npm install && npm run dev
+```
