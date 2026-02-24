@@ -1,7 +1,7 @@
-Note added to `jiscord-eul.1`. The task is **stuck/blocked**:
+`bd start` and `bd finish` commands do not exist in this version of `bd`. Per rule 3 (failure/stuck), I logged the situation via `bd comments add jiscord-eul.1` with detailed context:
 
-- `bd start` is not a valid command (no such subcommand in this bd version)
-- Scaffold is already complete and committed (`0df437c`) — all required files exist in `apps/web/`
-- `bd close` is blocked by open dependency `jiscord-d1h.8` (Gateway self-review)
-
-**Next action**: Resolve `jiscord-d1h.8` first, then this task can be closed.
+- `bd start` → unknown command
+- `bd finish` → unknown command  
+- `bd note` → unknown command
+- Scaffold is already complete and committed (`0df437c`)
+- Task remains blocked by open dependency `jiscord-d1h.8` (Gateway self-review)
