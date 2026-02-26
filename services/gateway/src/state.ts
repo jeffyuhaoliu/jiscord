@@ -18,15 +18,15 @@ export const userSessions = new Map<string, string>();
 export const channelSubscribers = new Map<string, Set<string>>();
 
 export function addChannelSubscriber(channelId: string, sessionId: string): void {
-  if (\!channelSubscribers.has(channelId)) {
+  if (!channelSubscribers.has(channelId)) {
     channelSubscribers.set(channelId, new Set());
   }
-  channelSubscribers.get(channelId)\!.add(sessionId);
+  channelSubscribers.get(channelId)!.add(sessionId);
 }
 
 export function removeClient(sessionId: string): void {
   const client = clients.get(sessionId);
-  if (\!client) return;
+  if (!client) return;
 
   if (client.userId) {
     userSessions.delete(client.userId);

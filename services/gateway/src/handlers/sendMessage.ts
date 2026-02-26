@@ -7,7 +7,7 @@ const DATA_SERVICE_URL = process.env.DATA_SERVICE_URL ?? 'http://localhost:3001'
 
 export async function handleSendMessage(sessionId: string, data: SendMessageData): Promise<void> {
   const client = clients.get(sessionId);
-  if (\!client || \!client.userId) {
+  if (!client || !client.userId) {
     console.warn(`[sendMessage] Unauthenticated session ${sessionId} tried to send message`);
     return;
   }
@@ -15,7 +15,7 @@ export async function handleSendMessage(sessionId: string, data: SendMessageData
   const { channelId, content } = data;
 
   // Auto-subscribe sender to channel
-  if (\!client.subscribedChannels.has(channelId)) {
+  if (!client.subscribedChannels.has(channelId)) {
     client.subscribedChannels.add(channelId);
     addChannelSubscriber(channelId, sessionId);
   }

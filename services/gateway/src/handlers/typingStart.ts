@@ -4,7 +4,7 @@ import { publishToChannel } from '../redis';
 
 export async function handleTypingStart(sessionId: string, data: TypingStartData): Promise<void> {
   const client = clients.get(sessionId);
-  if (\!client || \!client.userId) {
+  if (!client || !client.userId) {
     console.warn(`[typingStart] Unauthenticated session ${sessionId}`);
     return;
   }
@@ -12,7 +12,7 @@ export async function handleTypingStart(sessionId: string, data: TypingStartData
   const { channelId } = data;
 
   // Auto-subscribe if needed
-  if (\!client.subscribedChannels.has(channelId)) {
+  if (!client.subscribedChannels.has(channelId)) {
     client.subscribedChannels.add(channelId);
     addChannelSubscriber(channelId, sessionId);
   }
