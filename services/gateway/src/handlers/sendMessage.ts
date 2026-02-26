@@ -22,13 +22,21 @@ export async function handleSendMessage(sessionId: string, data: SendMessageData
 
   try {
     // Persist via data-service
-    const response = await axios.post(`${DATA_SERVICE_URL}/messages`, {
-      channelId,
-      authorId: client.userId,
+    const response = await axios.post<{
+      message_id: string; channel_id: string; author_id: string; content: string; created_at: string;
+    }>(`${DATA_SERVICE_URL}/channels/${channelId}/messages`, {
+      author_id: client.userId,
       content,
     });
 
-    const message: MessageCreateData = response.data;
+    const row = response.data;
+    const message: MessageCreateData = {
+      messageId: row.message_id,
+      channelId: row.channel_id,
+      authorId: row.author_id,
+      content: row.content,
+      createdAt: row.created_at,
+    };
 
     // Publish to Redis for fan-out
     await publishToChannel(channelId, {

@@ -3,11 +3,13 @@ import { client, connect } from "./db/client";
 import { MessageRepository } from "./repositories/MessageRepository";
 import { GuildRepository } from "./repositories/GuildRepository";
 import { ChannelRepository } from "./repositories/ChannelRepository";
+import { UserRepository } from "./repositories/UserRepository";
 
 const server = Fastify({ logger: true });
 const messageRepo = new MessageRepository();
 const guildRepo = new GuildRepository();
 const channelRepo = new ChannelRepository();
+const userRepo = new UserRepository();
 
 server.get("/health", async (_req, reply) => {
   const state = client.getState();
@@ -49,8 +51,8 @@ server.post<{ Params: PostMessageParams; Body: PostMessageBody }>(
       return reply.status(400).send({ error: "author_id and content are required" });
     }
     try {
-      await messageRepo.insertMessage({ channel_id: channelId, author_id, content });
-      return reply.status(201).send({ ok: true });
+      const message = await messageRepo.insertMessage({ channel_id: channelId, author_id, content });
+      return reply.status(201).send(message);
     } catch (err) {
       server.log.error(err);
       return reply.status(500).send({ error: "Internal server error" });
@@ -89,6 +91,54 @@ server.get<{ Params: GetChannelsParams }>("/guilds/:guildId/channels", async (re
       name: c.name,
       created_at: c.created_at,
     }));
+  } catch (err) {
+    server.log.error(err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// POST /users — create a new user (called by auth-service during registration)
+interface PostUserBody { username: string; email: string; password_hash: string }
+server.post<{ Body: PostUserBody }>("/users", async (req, reply) => {
+  const { username, email, password_hash } = req.body;
+  if (!username || !email || !password_hash) {
+    return reply.status(400).send({ error: "username, email, and password_hash are required" });
+  }
+  const existing = await userRepo.getUserByEmail(email);
+  if (existing) {
+    return reply.status(409).send({ error: "Email already in use" });
+  }
+  try {
+    const user = await userRepo.createUser({ username, email, passwordHash: password_hash });
+    return reply.status(201).send(user);
+  } catch (err) {
+    server.log.error(err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// GET /users/email/:email — look up a user by email (called by auth-service during login)
+interface GetUserByEmailParams { email: string }
+server.get<{ Params: GetUserByEmailParams }>("/users/email/:email", async (req, reply) => {
+  const { email } = req.params;
+  try {
+    const user = await userRepo.getUserByEmail(decodeURIComponent(email));
+    if (!user) return reply.status(404).send({ error: "User not found" });
+    return user;
+  } catch (err) {
+    server.log.error(err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// GET /users/:userId — fetch a user by ID (called by auth-service for GET /me)
+interface GetUserParams { userId: string }
+server.get<{ Params: GetUserParams }>("/users/:userId", async (req, reply) => {
+  const { userId } = req.params;
+  try {
+    const [user] = await userRepo.batchGetById([userId]);
+    if (!user) return reply.status(404).send({ error: "User not found" });
+    return user;
   } catch (err) {
     server.log.error(err);
     return reply.status(500).send({ error: "Internal server error" });

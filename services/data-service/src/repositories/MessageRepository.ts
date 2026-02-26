@@ -1,3 +1,4 @@
+import { types } from 'cassandra-driver';
 import { client } from '../db/client';
 import { MessageRow, MessagesPage } from '../types/db';
 
@@ -8,12 +9,19 @@ export class MessageRepository {
     channel_id: string;
     author_id: string;
     content: string;
-  }): Promise<void> {
+  }): Promise<MessageRow> {
     const { channel_id, author_id, content } = data;
-    // now() generates a server-side timeuuid for message_id
+    const messageId = types.TimeUuid.now();
     const query =
-      'INSERT INTO messages (channel_id, message_id, author_id, content) VALUES (?, now(), ?, ?)';
-    await client.execute(query, [channel_id, author_id, content], { prepare: true });
+      'INSERT INTO messages (channel_id, message_id, author_id, content) VALUES (?, ?, ?, ?)';
+    await client.execute(query, [channel_id, messageId, author_id, content], { prepare: true });
+    return {
+      message_id: messageId.toString(),
+      channel_id,
+      author_id,
+      content,
+      created_at: messageId.getDate().toISOString(),
+    };
   }
 
   async getByChannel(params: {

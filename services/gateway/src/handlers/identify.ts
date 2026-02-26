@@ -1,16 +1,35 @@
+import axios from 'axios';
 import { WebSocket } from 'ws';
 import { clients, userSessions } from '../state';
 import { OpCode, GatewayPayload, IdentifyData, ReadyData } from '../protocol';
 
-export function handleIdentify(ws: WebSocket, sessionId: string, data: IdentifyData): void {
-  const { userId, token } = data;
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL ?? 'http://localhost:3003';
 
-  // TODO: validate token against auth service when auth service exists
-  // For now, accept any non-empty userId
-  if (!userId) {
+export async function handleIdentify(ws: WebSocket, sessionId: string, data: IdentifyData): Promise<void> {
+  const { token } = data;
+
+  const reject = () => {
     const invalid: GatewayPayload<null> = { op: OpCode.INVALID_SESSION, d: null };
     ws.send(JSON.stringify(invalid));
     ws.close();
+  };
+
+  if (!token) {
+    reject();
+    return;
+  }
+
+  let userId: string;
+  try {
+    const res = await axios.post<{ sub: string; username: string }>(
+      `${AUTH_SERVICE_URL}/verify-token`,
+      null,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    userId = res.data.sub;
+  } catch {
+    console.warn(`[identify] Token validation failed for session ${sessionId}`);
+    reject();
     return;
   }
 

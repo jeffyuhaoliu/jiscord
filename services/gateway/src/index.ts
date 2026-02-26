@@ -60,7 +60,7 @@ wss.on('connection', (ws: WebSocket, _req: IncomingMessage) => {
         handleHeartbeat(sessionId);
         break;
       case OpCode.IDENTIFY:
-        handleIdentify(ws, sessionId, d as any);
+        await handleIdentify(ws, sessionId, d as any);
         break;
       case OpCode.SEND_MESSAGE:
         await handleSendMessage(sessionId, d as any);
