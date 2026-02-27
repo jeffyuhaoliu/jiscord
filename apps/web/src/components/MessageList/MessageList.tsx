@@ -30,7 +30,7 @@ export function MessageList({ channelId, on }: Props) {
     setNextPageState(null);
 
     const controller = new AbortController();
-    const baseUrl = "/api/data/channels/" + channelId + "/messages?pageSize=" + String(PAGE_SIZE);
+    const baseUrl = "/api/data/channels/" + channelId + "/messages?limit=" + String(PAGE_SIZE);
     fetch(baseUrl, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("HTTP " + String(res.status));
@@ -76,7 +76,7 @@ export function MessageList({ channelId, on }: Props) {
     if (!channelId || !nextPageState || loadingMore) return;
     setLoadingMore(true);
     const moreUrl = "/api/data/channels/" + channelId +
-      "/messages?pageSize=" + String(PAGE_SIZE) +
+      "/messages?limit=" + String(PAGE_SIZE) +
       "&pageState=" + encodeURIComponent(nextPageState);
     fetch(moreUrl)
       .then((res) => {

@@ -10,11 +10,11 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/data/, ""),
       },
       "/api/auth": {
-        target: "http://localhost:3002",
+        target: "http://localhost:3003",
         rewrite: (path) => path.replace(/^\/api\/auth/, ""),
       },
       "/ws": {
-        target: "ws://localhost:3000",
+        target: "ws://localhost:3002",
         ws: true,
       },
     },

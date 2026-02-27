@@ -104,13 +104,14 @@ server.post<{ Body: PostUserBody }>("/users", async (req, reply) => {
   if (!username || !email || !password_hash) {
     return reply.status(400).send({ error: "username, email, and password_hash are required" });
   }
-  const existing = await userRepo.getUserByEmail(email);
-  if (existing) {
-    return reply.status(409).send({ error: "Email already in use" });
-  }
   try {
+    const existing = await userRepo.getUserByEmail(email);
+    if (existing) {
+      return reply.status(409).send({ error: "Email already in use" });
+    }
     const user = await userRepo.createUser({ username, email, passwordHash: password_hash });
-    return reply.status(201).send(user);
+    const { password_hash: _, ...safeUser } = user;
+    return reply.status(201).send(safeUser);
   } catch (err) {
     server.log.error(err);
     return reply.status(500).send({ error: "Internal server error" });
@@ -138,7 +139,8 @@ server.get<{ Params: GetUserParams }>("/users/:userId", async (req, reply) => {
   try {
     const [user] = await userRepo.batchGetById([userId]);
     if (!user) return reply.status(404).send({ error: "User not found" });
-    return user;
+    const { password_hash: _, ...safe } = user;
+    return safe;
   } catch (err) {
     server.log.error(err);
     return reply.status(500).send({ error: "Internal server error" });

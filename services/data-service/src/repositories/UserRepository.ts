@@ -30,7 +30,8 @@ export class UserRepository {
   }
 
   async batchGetById(ids: string[]): Promise<(User | null)[]> {
-    return this.userLoader.loadMany(ids) as Promise<(User | null)[]>;
+    const results = await this.userLoader.loadMany(ids);
+    return results.map(r => { if (r instanceof Error) throw r; return r; });
   }
 
   async getUserByEmail(email: string): Promise<User | null> {

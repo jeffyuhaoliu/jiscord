@@ -17,7 +17,7 @@ type EventCallback<T> = (data: T) => void;
 
 type EventMap = {
   MESSAGE_CREATE: MessageCreatePayload;
-  TYPING_START: TypingStartPayload;
+  TYPING: TypingStartPayload;
 };
 
 export function useGateway(url: string, token: string | null) {

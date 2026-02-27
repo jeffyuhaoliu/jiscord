@@ -55,21 +55,25 @@ wss.on('connection', (ws: WebSocket, _req: IncomingMessage) => {
 
     const { op, d } = payload;
 
-    switch (op) {
-      case OpCode.HEARTBEAT:
-        handleHeartbeat(sessionId);
-        break;
-      case OpCode.IDENTIFY:
-        await handleIdentify(ws, sessionId, d as any);
-        break;
-      case OpCode.SEND_MESSAGE:
-        await handleSendMessage(sessionId, d as any);
-        break;
-      case OpCode.TYPING_START:
-        await handleTypingStart(sessionId, d as any);
-        break;
-      default:
-        console.warn(`[gateway] Unknown opcode: ${op}`);
+    try {
+      switch (op) {
+        case OpCode.HEARTBEAT:
+          handleHeartbeat(sessionId);
+          break;
+        case OpCode.IDENTIFY:
+          await handleIdentify(ws, sessionId, d as any);
+          break;
+        case OpCode.SEND_MESSAGE:
+          await handleSendMessage(sessionId, d as any);
+          break;
+        case OpCode.TYPING_START:
+          await handleTypingStart(sessionId, d as any);
+          break;
+        default:
+          console.warn(`[gateway] Unknown opcode: ${op}`);
+      }
+    } catch (err) {
+      console.error('[gateway] Unhandled error in message handler:', err);
     }
   });
 

@@ -7,7 +7,9 @@ const CHANNEL_PREFIX = 'jiscord:channel:';
 
 // Separate publisher and subscriber clients (ioredis requirement for pub/sub)
 export const publisher = new Redis(REDIS_URL);
+publisher.on('error', (err) => console.error('[redis] publisher error:', err));
 export const subscriber = new Redis(REDIS_URL);
+subscriber.on('error', (err) => console.error('[redis] subscriber error:', err));
 
 export async function publishToChannel(channelId: string, payload: { event: string; data: unknown }): Promise<void> {
   await publisher.publish(`${CHANNEL_PREFIX}${channelId}`, JSON.stringify(payload));
@@ -52,7 +54,7 @@ export function startRedisSubscriber(): void {
     for (const sessionId of sessionIds) {
       const client = clients.get(sessionId);
       if (client && client.ws.readyState === 1 /* OPEN */) {
-        client.ws.send(wsMessage);
+        client.ws.send(wsMessage, (err) => { if (err) console.error('[redis] ws.send error for session', sessionId, err); });
       }
     }
   });

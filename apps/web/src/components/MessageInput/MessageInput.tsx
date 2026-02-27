@@ -19,7 +19,7 @@ export function MessageInput({ channelId, send, on }: Props) {
 
   // Listen for TYPING_START events on this channel
   useEffect(() => {
-    const off = on("TYPING_START", (payload: TypingStartPayload) => {
+    const off = on("TYPING", (payload: TypingStartPayload) => {
       if (payload.channelId !== channelId) return;
       setTypingUsers((prev) =>
         prev.includes(payload.userId) ? prev : [...prev, payload.userId]
