@@ -1,17 +1,40 @@
-Done. Here's the review summary:
+Here is the final review summary and what was done:
 
-**Verification results (jiscord-0nd.12):**
+---
 
-| Check | Result |
-|-------|--------|
-| No N+1 reads | ✅ All multi-entity lookups go through DataLoader `loadMany()` or single-partition range scans |
-| TS interfaces match schema | ✅ Fixed — added missing `GuildMember`, moved `MessageRow`/`MessagesPage` to `types/db.ts` |
-| `/health` checks DB liveness | ✅ `getConnectedHosts().length > 0` → returns 503 on disconnect |
-| README with API surface + Mermaid | ✅ Created `services/data-service/README.md` |
+## Code Review Results
 
-**Fixes applied:**
-- `services/data-service/src/types/db.ts`: added `GuildMember`, `MessageRow`, `MessagesPage`
-- `MessageRepository.ts`: imports types from shared module instead of defining locally (re-exports for consumers)
-- `services/data-service/README.md`: full API table + 3 Mermaid diagrams covering each Dataloader pattern and message pagination
+| Component | Result | Issues Fixed | Notes |
+|---|---|---|---|
+| data-service | ⚠️ Max iterations | 1 | password_hash exposure resolved via dedicated `verify-password` endpoint |
+| auth-service | ✅ Approved | 1 | Hardcoded `JWT_SECRET` fallback removed; startup now fails fast |
+| gateway | ✅ Approved | 0 | No issues found |
+| web-frontend | ⚠️ Max iterations | 2 | WebSocket relative URL fixed; heartbeat timer leak fixed; reviewer's 3rd-pass "double body read" was a false positive (branches are mutually exclusive) |
+| types-and-migrations | ✅ Approved | 0 | All interfaces match CQL schemas; verify-password integration confirmed correct |
 
-Both `jiscord-0nd.12` and the parent epic `jiscord-0nd` are now closed.
+---
+
+## Epic jiscord-l2t — Completed
+
+All 9 child issues closed and committed. Summary of what was built:
+
+**Backend (data-service):**
+- `GuildRepository.getAll()` + `GET /guilds` — guild browser
+- `POST /guilds` — create guild with creator auto-membership (LOGGED BATCH)
+- `POST /guilds/:guildId/members` — join guild
+- `POST /guilds/:guildId/channels` — create channel
+- `POST /users/email/:email/verify-password` — bcrypt runs server-side, password hash never travels the wire
+
+**Backend (auth-service):**
+- Login delegates to `verify-password` instead of fetching the hash locally
+- `JWT_SECRET` is now required at startup (no silent insecure default)
+
+**Frontend:**
+- GuildSidebar: **+** creates a server, **🔍** opens the guild browser with join buttons
+- ChannelList: **+** opens an inline channel name input
+- WebSocket URL fixed from relative `/ws` to absolute `ws(s)://host/ws`
+- Heartbeat timer now starts after `READY` (not `HELLO`) and is stored in a ref to prevent leaks
+
+**Dev tooling:**
+- `npm run seed` in `services/data-service` — idempotent script that creates `demo@example.com` / `password123`, a "General" guild, and a "general" channel
+- `GETTING_STARTED.md` fully updated: seed instructions replace the manual `cqlsh` steps
