@@ -1,4 +1,5 @@
 import http from "http";
+import net from "net";
 
 export async function pollUntil(
   fn: () => Promise<boolean>,
@@ -33,6 +34,28 @@ export async function waitForHealth(
     timeoutMs,
     1000,
     url
+  );
+}
+
+export async function waitForPort(
+  host: string,
+  port: number,
+  timeoutMs: number
+): Promise<void> {
+  await pollUntil(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(2000);
+        socket
+          .once("connect", () => { socket.destroy(); resolve(true); })
+          .once("error", () => { socket.destroy(); resolve(false); })
+          .once("timeout", () => { socket.destroy(); resolve(false); })
+          .connect(port, host);
+      }),
+    timeoutMs,
+    1000,
+    `${host}:${port}`
   );
 }
 
