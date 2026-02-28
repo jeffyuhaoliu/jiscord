@@ -21,8 +21,12 @@ interface DataUser {
   user_id: string;
   username: string;
   email: string;
-  password_hash: string;
   created_at: string;
+}
+
+interface VerifyPasswordResponse {
+  valid: boolean;
+  user: DataUser;
 }
 
 async function dataGet<T>(path: string): Promise<T | null> {
@@ -80,16 +84,22 @@ export async function authRoutes(server: FastifyInstance): Promise<void> {
       return reply.status(401).send({ error: 'Invalid credentials' });
     }
 
-    const user = await dataGet<DataUser>(`/users/email/${encodeURIComponent(email)}`);
-    if (!user) {
+    let verifyResult: VerifyPasswordResponse | null = null;
+    try {
+      const { data } = await dataPost<VerifyPasswordResponse>(`/users/email/${encodeURIComponent(email)}/verify-password`, { password });
+      verifyResult = data;
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) {
+        return reply.status(401).send({ error: 'Invalid credentials' });
+      }
+      throw err;
+    }
+
+    if (!verifyResult.valid) {
       return reply.status(401).send({ error: 'Invalid credentials' });
     }
 
-    const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) {
-      return reply.status(401).send({ error: 'Invalid credentials' });
-    }
-
+    const user = verifyResult.user;
     const token = server.jwt.sign({ sub: user.user_id, username: user.username });
     return reply.send({
       token,

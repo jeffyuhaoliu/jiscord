@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 import { client } from '../db/client';
-import { Guild } from '../types/db';
+import { Guild, GuildMember } from '../types/db';
 
 export class GuildRepository {
   private guildLoader: DataLoader<string, Guild | null>;
@@ -43,5 +43,32 @@ export class GuildRepository {
     if (guildIds.length === 0) return [];
     const guilds = await this.guildLoader.loadMany(guildIds);
     return guilds.filter((g): g is Guild => g !== null && !(g instanceof Error));
+  }
+
+  async getAll(): Promise<Guild[]> {
+    const query = 'SELECT guild_id, name, created_at FROM guilds';
+    const result = await client.execute(query, [], { prepare: true });
+    return result.rows.map((row) => ({
+      guild_id: row.guild_id.toString(),
+      name: row.name as string,
+      created_at: row.created_at as Date,
+    }));
+  }
+
+  async joinGuild(guildId: string, userId: string): Promise<GuildMember> {
+    const joined_at = new Date();
+    // Use a LOGGED BATCH to keep guild_members and user_guilds consistent
+    const batch = [
+      {
+        query: 'INSERT INTO guild_members (guild_id, user_id, joined_at) VALUES (?, ?, ?)',
+        params: [guildId, userId, joined_at],
+      },
+      {
+        query: 'INSERT INTO user_guilds (user_id, guild_id) VALUES (?, ?)',
+        params: [userId, guildId],
+      },
+    ];
+    await client.batch(batch, { prepare: true, logged: true });
+    return { guild_id: guildId, user_id: userId, joined_at };
   }
 }

@@ -7,7 +7,7 @@ import { MessageList } from "../components/MessageList";
 import { MessageInput } from "../components/MessageInput";
 import { useGateway } from "../hooks/useGateway";
 
-const GATEWAY_URL = "/ws";
+const GATEWAY_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`;
 
 export function ChannelsPage() {
   const { user, token, logout } = useAuth();

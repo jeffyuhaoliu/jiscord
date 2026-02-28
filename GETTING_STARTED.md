@@ -74,28 +74,23 @@ docker exec -i jiscord-scylladb-1 cqlsh < migrations/003_guilds.cql
 
 > The exact container name may differ. Run `docker ps` to find the ScyllaDB container name.
 
-### Step 4: Seed a guild and channel
+### Step 4: Seed initial data
 
-There are currently no admin endpoints for creating guilds or channels. To seed initial data, connect directly to ScyllaDB via `cqlsh`:
+Run the seed script to create a demo user, a "General" guild, and a "general" channel:
 
 ```bash
-docker exec -it <scylladb-container-name> cqlsh
+cd services/data-service
+npm install
+npm run seed
 ```
 
-```cql
-USE jiscord;
+The seed script is idempotent — it is safe to run multiple times. It will skip any resources that already exist.
 
--- Create a guild
-INSERT INTO guilds (guild_id, name, created_at)
-VALUES (uuid(), 'General', toTimestamp(now()));
+**Demo credentials created by the seed:**
+- Email: `demo@example.com`
+- Password: `password123`
 
--- Create a channel inside that guild
--- (use the guild_id from the INSERT above)
-INSERT INTO channels (guild_id, channel_id, name, created_at)
-VALUES (<guild-id>, uuid(), 'general', toTimestamp(now()));
-```
-
-> Guild and channel creation via the API is not yet implemented. This is a known gap in the current MVP.
+> The seed script requires auth-service (port 3003) and data-service (port 3001) to be running. Start them via `docker-compose up` first.
 
 ### Step 5: Start the frontend
 
@@ -113,7 +108,7 @@ The app will be available at `http://localhost:5173`.
 The services are pre-configured for local Docker Compose use. For custom deployments, the key variables are:
 
 **auth-service:**
-- `JWT_SECRET` — Secret key for signing tokens (default: `supersecret`)
+- `JWT_SECRET` — **Required.** Secret key for signing tokens. The service will refuse to start if this is not set.
 - `DATA_SERVICE_URL` — URL for data-service (default: `http://data-service:3001`)
 
 **gateway:**
@@ -174,21 +169,28 @@ Click **Register**. On success, you are redirected to the login page.
 
 > If the email is already taken, you will see a `409 Conflict` error.
 
+Alternatively, use the demo account created by the seed script: `demo@example.com` / `password123`.
+
 ### Step 3: Log in
 
 Enter your email and password on the login page and click **Login**.
 
 On success, a JWT token is issued and stored in memory (not in localStorage or cookies — it is cleared on page refresh). You are redirected to the main chat interface at `/channels`.
 
-### Step 4: Browse guilds
+### Step 4: Browse or create guilds
 
-The left sidebar displays the guilds you are a member of. Click a guild icon to select it.
+The left sidebar displays the guilds you are a member of.
 
-> Currently, guild membership is managed via the database directly. Users must be added to a guild by an operator before they appear here.
+- **Select a guild** — click its icon
+- **Create a guild** — click the **+** button at the bottom of the sidebar, enter a name, and press Create. You are automatically added as a member and taken to the new guild.
+- **Browse & join guilds** — click the **search (🔍)** button to open the guild browser. Click **Join** next to any guild you want to join.
 
-### Step 5: Browse channels
+### Step 5: Browse or create channels
 
-After selecting a guild, the channel list appears in the second panel. Click a channel name to open it.
+After selecting a guild, the channel list appears in the second panel.
+
+- **Select a channel** — click its name
+- **Create a channel** — click the **+** button next to the "Channels" header, type a name (spaces are converted to hyphens), and press **Add** or hit Enter.
 
 ### Step 6: Read message history
 
@@ -212,7 +214,7 @@ What happens behind the scenes:
 
 ### Step 8: Real-time updates
 
-You do not need to refresh. Any message sent by another user in the same channel will appear in real time via the WebSocket connection. The gateway maintains a heartbeat (every 30 seconds) to keep the connection alive.
+You do not need to refresh. Any message sent by another user in the same channel will appear in real time via the WebSocket connection. The gateway maintains a heartbeat (started after authentication is confirmed) to keep the connection alive.
 
 ### Session behavior
 
@@ -226,10 +228,9 @@ You do not need to refresh. Any message sent by another user in the same channel
 
 The following features are not yet implemented in the current MVP:
 
-- Creating guilds or channels through the UI
-- Joining or leaving guilds
 - Editing or deleting messages
 - Direct messages (DMs)
 - File or image uploads
 - Presence / online status indicators
-- Member lists
+- Member lists per guild
+- An API gateway / reverse proxy (frontend calls each service directly)

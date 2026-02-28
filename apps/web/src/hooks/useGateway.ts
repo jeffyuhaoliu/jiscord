@@ -23,6 +23,7 @@ type EventMap = {
 export function useGateway(url: string, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const listenersRef = useRef<Map<string, Set<EventCallback<unknown>>>>(new Map());
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const on = useCallback(<K extends keyof EventMap>(
     event: K,
@@ -48,7 +49,7 @@ export function useGateway(url: string, token: string | null) {
 
     const ws = new WebSocket(url);
     wsRef.current = ws;
-    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+    let pendingHeartbeatInterval: number | null = null;
 
     ws.onmessage = (ev) => {
       let payload: { op: string; d: unknown };
@@ -60,12 +61,18 @@ export function useGateway(url: string, token: string | null) {
 
       if (payload.op === "HELLO") {
         const hello = payload.d as { heartbeat_interval: number };
+        pendingHeartbeatInterval = hello.heartbeat_interval;
         ws.send(JSON.stringify({ op: "IDENTIFY", d: { token } }));
-        heartbeatTimer = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ op: "HEARTBEAT", d: null }));
-          }
-        }, hello.heartbeat_interval);
+      }
+
+      if (payload.op === "READY") {
+        if (pendingHeartbeatInterval !== null) {
+          heartbeatTimerRef.current = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ op: "HEARTBEAT", d: null }));
+            }
+          }, pendingHeartbeatInterval);
+        }
       }
 
       const listeners = listenersRef.current.get(payload.op);
@@ -77,7 +84,10 @@ export function useGateway(url: string, token: string | null) {
     };
 
     return () => {
-      if (heartbeatTimer !== null) clearInterval(heartbeatTimer);
+      if (heartbeatTimerRef.current !== null) {
+        clearInterval(heartbeatTimerRef.current);
+        heartbeatTimerRef.current = null;
+      }
       ws.close();
       wsRef.current = null;
     };
