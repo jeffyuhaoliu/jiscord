@@ -1,0 +1,16 @@
+{
+  "name": "jiscord-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.5.0",
+    "ws": "^8.18.0"
+  }
+}
