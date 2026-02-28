@@ -13,8 +13,11 @@ export default async function globalSetup(): Promise<void> {
     stdio: "inherit",
   });
 
-  console.log("[e2e:setup] Waiting for data-service (3001)...");
-  await waitForHealth("http://localhost:3001/health", 90_000);
+  // ScyllaDB takes 60-120s to initialize even in developer mode. The data-service
+  // will crash on startup until Scylla accepts CQL connections, then restart
+  // (restart: on-failure in docker-compose.yml). Give it up to 3 minutes.
+  console.log("[e2e:setup] Waiting for data-service (3001) — ScyllaDB may take up to 3 min...");
+  await waitForHealth("http://localhost:3001/health", 180_000);
 
   console.log("[e2e:setup] Waiting for auth-service (3003)...");
   await waitForHealth("http://localhost:3003/health", 30_000);

@@ -25,6 +25,7 @@ services:
     depends_on:
       - scylladb
       - redis
+    restart: on-failure
 
   auth-service:
     build: ./services/auth-service
@@ -36,6 +37,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-prod}
     depends_on:
       - data-service
+    restart: on-failure
 
   gateway:
     build: ./services/gateway
@@ -50,6 +52,7 @@ services:
       - redis
       - data-service
       - auth-service
+    restart: on-failure
 
 volumes:
   scylla-data:
